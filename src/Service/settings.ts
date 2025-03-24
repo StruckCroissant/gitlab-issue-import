@@ -5,6 +5,7 @@ import type {
 	GitlabIssueImportSettingKey,
 } from "@Types";
 import { isGitlabIssueImportSetting } from "src/Types";
+import { GitlabInstance } from "./gitlab";
 
 let settings: GitlabIssueImportSettings | null = null;
 
@@ -39,6 +40,7 @@ class SettingsLoader {
 
 	async save() {
 		await this.plugin().saveData(settings);
+		GitlabInstance.unsetInstance();
 	}
 
 	async update(

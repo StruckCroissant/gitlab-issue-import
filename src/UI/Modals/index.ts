@@ -1,3 +1,8 @@
+import { GitlabInstance } from "@Services/gitlab";
+import {
+	GitlabIssueImportErrorNotice,
+	GitlabIssueImportNotice,
+} from "@UI/Notices";
 import { App, ButtonComponent, Modal, Setting } from "obsidian";
 
 export class GitlabIssueImportModal extends Modal {
@@ -20,8 +25,12 @@ export class GitlabIssueImportModal extends Modal {
 
 		const createButton = new ButtonComponent(this.contentEl)
 			.setButtonText("Create")
-			.onClick(() => {
-				console.log(issueId);
+			.onClick(async () => {
+				try {
+					const issue = await GitlabInstance.issue(issueId as number);
+				} catch (e) {
+					new GitlabIssueImportErrorNotice(e.message);
+				}
 			});
 	}
 }

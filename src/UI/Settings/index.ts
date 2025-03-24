@@ -54,18 +54,7 @@ class GitlabConnectionSettingTab extends PluginSettingTab {
 		new ButtonComponent(this.containerEl)
 			.setButtonText("test connection")
 			.onClick(async () => {
-				const settings = SettingsLoader.settings();
-				const gitlab = GitlabInstance.fromSettings(settings);
-
-				try {
-					await gitlab.testConnection();
-				} catch (e) {
-					new GitlabIssueImportErrorNotice(
-						"Failed to connect to instance"
-					);
-					return;
-				}
-
+				await GitlabInstance.initialize();
 				new GitlabIssueImportNotice("Connected successfully!");
 			});
 	}

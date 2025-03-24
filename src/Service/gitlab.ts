@@ -1,33 +1,59 @@
-import { Gitlab } from "@gitbeaker/rest";
-import type { GitlabIssueImportSettings } from "@Types";
+import { Gitlab, type IssueSchemaWithBasicLabels } from "@gitbeaker/rest";
+import { InitializedSettingsLoader } from "./settings";
+import { GitlabIssueImportErrorNotice } from "@UI/Notices";
 
-let gitlabInstance = null;
+type GitlabInstanceType = InstanceType<typeof Gitlab>;
 
-export function buildGitlabInstance(host: string, token: string) {
-	gitlabInstance = new Gitlab({
-		host,
-		token,
-	});
+let instance: GitlabInstanceType | null = null;
+
+function isInitializedInstance(
+	instance: GitlabInstanceType | null
+): instance is GitlabInstanceType {
+	if (instance === null) {
+		return false;
+	}
+	return true;
 }
 
-export function loadIssue() {}
-
+// TODO honestly this doesn't need to be a class instance it can just be an object export
 export class GitlabInstance {
-	instance;
+	static async issue(id: number): Promise<IssueSchemaWithBasicLabels | null> {
+		const instance = await GitlabInstance.initialize();
+		if (instance === null) return null;
 
-	constructor(host: string, token: string) {
-		this.instance = new Gitlab({
-			host,
-			token,
-		});
+		const result = await instance.Issues.all({ iids: [id] });
+		if (result.length === 0) {
+			throw new Error(`Could not find issue (${id})`);
+		}
+
+		return result.pop() as IssueSchemaWithBasicLabels;
 	}
 
-	static fromSettings({ host, key }: GitlabIssueImportSettings) {
-		return new GitlabInstance(host, key);
+	static async initialize() {
+		if (instance !== null) return instance;
+
+		const { host, key } = InitializedSettingsLoader.settings();
+		const tempInstance = new Gitlab({ host, token: key });
+
+		try {
+			// Simple call to ensure that a connection was established
+			await tempInstance.Issues.all({
+				perPage: 1,
+				page: 1,
+			});
+		} catch (e) {
+			throw new Error("Failed to connect to instance");
+		}
+
+		instance = tempInstance;
+		return tempInstance;
 	}
 
-	async testConnection() {
-		const result = await this.instance.Issues.all();
-		console.log(result);
+	/**
+	 * Used by the settings loader to reset creds once they're updated
+	 * @see InitializedSettingsLoader
+	 */
+	static unsetInstance() {
+		instance = null;
 	}
 }
