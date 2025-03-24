@@ -1,5 +1,6 @@
 import {
 	App,
+	ButtonComponent,
 	Editor,
 	MarkdownView,
 	Modal,
@@ -7,39 +8,32 @@ import {
 	Plugin,
 	PluginSettingTab,
 	Setting,
+	type PluginManifest,
 } from "obsidian";
 import "bootstrap/dist/css/bootstrap.min.css";
+export * from "@UI/Modals";
+import { loadCommands } from "@UI/Commands";
+import type {
+	GitlabIssueImportPlugin,
+	GitlabIssueImportSettings,
+} from "@Types";
+import { addSettings } from "@UI/Settings";
+import { InitializedSettingsLoader } from "@Services/settings";
 
-export class GitlabIssueImportModal extends Modal {
-	constructor(app: App) {
-		super(app);
-
-		this.setTitle("Import Gitlab Issue");
-
-		let issueId: number | null = null;
-
-		new Setting(this.contentEl)
-			.setClass("invalid-feedback")
-			.setName("Issue ID")
-			.addText((text) => {
-				text.onChange((value) => {
-					issueId = Number.parseInt(value);
-				});
-			});
-	}
-}
-
-export default class GitlabIssueImportPlugin extends Plugin {
+export default class PluginDefinition
+	extends Plugin
+	implements GitlabIssueImportPlugin
+{
 	statusBarTextElement: HTMLSpanElement;
+	settings: GitlabIssueImportSettings;
+
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
 
 	async onload() {
-		this.addCommand({
-			id: "import-gitlab-issue",
-			name: "Import Gitlab Issue",
-			callback: () => {
-				const modal = new GitlabIssueImportModal(this.app);
-				modal.open();
-			},
-		});
+		loadCommands(this);
+		this.settings = await InitializedSettingsLoader.load(this);
+		addSettings(this, this.app);
 	}
 }

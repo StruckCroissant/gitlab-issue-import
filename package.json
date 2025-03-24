@@ -22,6 +22,7 @@
 		"typescript": "4.7.4"
 	},
 	"dependencies": {
+		"@gitbeaker/rest": "^42.1.0",
 		"bootstrap": "^5.3.3",
 		"obsidian-sample-plugin": "file:"
 	}
