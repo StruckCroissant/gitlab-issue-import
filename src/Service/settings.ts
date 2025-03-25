@@ -7,41 +7,44 @@ import type {
 import { isGitlabIssueImportSetting } from "src/Types";
 import { GitlabInstance } from "./gitlab";
 
+const defaultSettings: GitlabIssueImportSettings = {
+	host: null,
+	key: null,
+	folder: null,
+	templateFile: null,
+};
+
 let settings: GitlabIssueImportSettings | null = null;
+let plugin: GitlabIssueImportPlugin | null = null;
 
-class SettingsLoader {
-	invalid: boolean;
-	#plugin: GitlabIssueImportPlugin;
-
+export const SettingsLoader = {
 	async load(
-		plugin: GitlabIssueImportPlugin
+		inputPlugin: GitlabIssueImportPlugin
 	): Promise<GitlabIssueImportSettings> {
-		this.#plugin = plugin;
-		let loadedSettings = (await plugin.loadData()) ?? {
-			host: null,
-			key: null,
-		};
+		plugin = inputPlugin;
+		let loadedSettings: GitlabIssueImportSettings =
+			(await inputPlugin.loadData()) ?? defaultSettings;
 		settings = loadedSettings;
 
 		return loadedSettings;
-	}
+	},
 
 	plugin(): GitlabIssueImportPlugin {
-		if (!this.#plugin) throw new Error("Plugin is not initialized!");
+		if (!plugin) throw new Error("Plugin is not initialized!");
 
-		return this.#plugin;
-	}
+		return plugin;
+	},
 
 	settings(): GitlabIssueImportSettings {
 		if (!settings) throw new Error("Settings are not initialized!");
 
 		return settings;
-	}
+	},
 
 	async save() {
 		await this.plugin().saveData(settings);
 		GitlabInstance.unsetInstance();
-	}
+	},
 
 	async update(
 		value: GitlabIssueImportSettings | GitlabIssueImportSetting,
@@ -53,25 +56,15 @@ class SettingsLoader {
 			settings = value as GitlabIssueImportSettings;
 		}
 		await this.save();
-	}
+	},
+
+	updateHandlerFor(
+		key: GitlabIssueImportSettingKey
+	): (value: Parameters<typeof this.update>[0]) => void {
+		return (value) => this.update(value, key);
+	},
 
 	get(key: keyof GitlabIssueImportSettings) {
-		if (settings === null) {
-			throw new Error("Cannot retrieve from null settings instance");
-		}
-
-		return settings[key];
-	}
-
-	validate(): true {
-		if (!settings?.host) {
-			throw new Error("Host is not set or is invalid");
-		} else if (!settings?.key) {
-			throw new Error("API Key is not set or is invalid");
-		}
-
-		return true;
-	}
-}
-
-export const InitializedSettingsLoader = new SettingsLoader();
+		return this.settings()[key];
+	},
+};

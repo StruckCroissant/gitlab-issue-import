@@ -6,3 +6,57 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+/*
+Utilities
+*/
+.d-flex {
+    display: flex;
+}
+
+.align-items-end {
+    align-items: end;
+}
+
+.float-right {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.float-left {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+/*
+Components
+*/
+
+.lds-dual-ring,
+.lds-dual-ring:after {
+  box-sizing: border-box;
+}
+.lds-dual-ring {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 21px;
+  height: 21px;
+  margin: 0;
+  border-radius: 50%;
+  border: 4.4px solid currentColor;
+  border-color: currentColor transparent currentColor transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

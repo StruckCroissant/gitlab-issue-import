@@ -18,7 +18,7 @@ import type {
 	GitlabIssueImportSettings,
 } from "@Types";
 import { addSettings } from "@UI/Settings";
-import { InitializedSettingsLoader } from "@Services/settings";
+import { SettingsLoader } from "@Services/settings";
 
 export default class PluginDefinition
 	extends Plugin
@@ -33,7 +33,7 @@ export default class PluginDefinition
 
 	async onload() {
 		loadCommands(this);
-		this.settings = await InitializedSettingsLoader.load(this);
+		this.settings = await SettingsLoader.load(this);
 		addSettings(this, this.app);
 	}
 }

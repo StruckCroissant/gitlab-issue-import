@@ -1,8 +1,10 @@
 import { Plugin } from "obsidian";
 
 export interface GitlabIssueImportSettings {
-	host: string;
-	key: string;
+	host: string | null;
+	key: string | null;
+	folder: string | null;
+	templateFile: string | null;
 }
 
 export type GitlabIssueImportSetting =
