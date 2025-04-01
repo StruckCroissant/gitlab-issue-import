@@ -1,4 +1,6 @@
 import { GitlabInstance } from "@Services/gitlab";
+import { SettingsLoader } from "@Services/settings";
+import { Templating } from "@Services/templating";
 import {
 	GitlabIssueImportErrorNotice,
 	GitlabIssueImportNotice,
@@ -28,6 +30,22 @@ export class GitlabIssueImportModal extends Modal {
 			.onClick(async () => {
 				try {
 					const issue = await GitlabInstance.issue(issueId as number);
+					const template = Templating.findTemplate(
+						SettingsLoader.get("templateFile")
+					);
+					const folder = app.vault.getFolderByPath(
+						SettingsLoader.get("folder")
+					);
+					if (folder === null)
+						throw new Error(
+							"Folder is invalid! Please check your settings"
+						);
+					await Templating.createNote(
+						folder,
+						template,
+						issue.title,
+						issue
+					);
 				} catch (e) {
 					new GitlabIssueImportErrorNotice(e.message);
 				}

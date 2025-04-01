@@ -19,6 +19,7 @@ import type {
 } from "@Types";
 import { addSettings } from "@UI/Settings";
 import { SettingsLoader } from "@Services/settings";
+import { Templating } from "@Services/templating";
 
 export default class PluginDefinition
 	extends Plugin
@@ -34,6 +35,10 @@ export default class PluginDefinition
 	async onload() {
 		loadCommands(this);
 		this.settings = await SettingsLoader.load(this);
+		Templating.load(
+			(this.app as any).plugins.plugins["templater-obsidian"].templater,
+			this.app
+		);
 		addSettings(this, this.app);
 	}
 }
