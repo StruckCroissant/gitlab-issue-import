@@ -20,6 +20,7 @@ import type {
 import { addSettings } from "@UI/Settings";
 import { SettingsLoader } from "@Services/settings";
 import { Templating } from "@Services/templating";
+import { initializeGlobalRequestInstance } from "@Services/request";
 
 export default class PluginDefinition
 	extends Plugin
@@ -40,5 +41,6 @@ export default class PluginDefinition
 			this.app
 		);
 		addSettings(this, this.app);
+		initializeGlobalRequestInstance();
 	}
 }

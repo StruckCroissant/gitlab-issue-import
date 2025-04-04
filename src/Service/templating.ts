@@ -9,6 +9,8 @@ interface Templater {
 		open_new_note?: boolean
 	) => unknown;
 
+	append_template_to_active_file: (template: TFile) => unknown;
+
 	find_tfile: (template: string) => unknown;
 }
 
@@ -48,18 +50,6 @@ function getFrontmatterFor(issue: IssueSchema): string {
 	return text;
 }
 
-async function buildTemplateForIssueAndTemplateFile(
-	issue: IssueSchema,
-	templateFile: TFile
-): Promise<string> {
-	assertAppIsInitialized(concreteApp);
-	const templateFileContent = await concreteApp.vault.cachedRead(
-		templateFile
-	);
-
-	return getFrontmatterFor(issue) + templateFileContent;
-}
-
 export const Templating = {
 	async load(plugin: unknown, app: App) {
 		if (!isTemplater(plugin))
@@ -76,17 +66,11 @@ export const Templating = {
 	) {
 		const create_new = getStaticFunction("file", "create_new");
 
-		const templateContent = await buildTemplateForIssueAndTemplateFile(
-			issue,
-			templateFile
-		);
+		const frontmatter = getFrontmatterFor(issue);
 
-		const text = await create_new(
-			templateContent,
-			filename,
-			true,
-			targetFolder
-		);
+		await create_new(frontmatter, filename, true, targetFolder);
+
+		tp?.append_template_to_active_file(templateFile);
 	},
 
 	findTemplate(templateName: string): any {
